@@ -10,8 +10,8 @@ function GameBoard() {
     const timerRef = React.useRef(null);
 
     function initializeGame() {
-        const emojis = ['🌞', '🌈', '🍕', '🚀', '🐶', '⚽', '🎉', '🎸', 
-                       '🌺', '🦋', '🎨', '🎭', '🎪', '🎢', '🎡', '🎠'];
+        const emojis = ['🍎', '🍔', '🍣', '🚗', '🐱', '🏀', '🎂', '🎷', 
+            '🌲', '🦁', '🎮', '🎬', '🎯', '🎳', '🎻', '🎾'];
         const gameEmojis = emojis.slice(0, gameMode / 2);
         const cards = [...gameEmojis, ...gameEmojis]
             .sort(() => Math.random() - 0.5)
