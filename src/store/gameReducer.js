@@ -2,8 +2,10 @@ const initialState = {
     cards: [],
     moves: 0,
     time: 0,
-    gameMode: 16
-  };
+    gameMode: 16,
+    background: 'orange-purple',
+    history: []
+};
 
 function gameReducer(state = initialState, action) {
     switch(action.type) {

@@ -14,8 +14,29 @@ function Settings() {
     const gameModes = [
         { value: 4, name: '2x2' },
         { value: 16, name: '4x4' },
-        { value: 32, name: '8x4' }
+        { value: 64, name: '8x8' }
     ];
+
+    const handleModeChange = (mode) => {
+        dispatch({ type: 'CHANGE_MODE', mode });
+        initializeGame(mode);
+    };
+
+    const initializeGame = (mode) => {
+        const emojis = ['🌞', '🌈', '🍕', '🚀', '🐶', '⚽', '🎉', '🎸', 
+                       '🌺', '🦋', '🎨', '🎭', '🎪', '🎢', '🎡', '🎠'];
+        const gameEmojis = emojis.slice(0, mode / 2);
+        const cards = [...gameEmojis, ...gameEmojis]
+            .sort(() => Math.random() - 0.5)
+            .map((emoji, index) => ({
+                id: index,
+                value: emoji,
+                isFlipped: false,
+                isMatched: false
+            }));
+
+        dispatch({ type: 'START_GAME', cards });
+    };
 
     return React.createElement('div', {
         style: {
@@ -36,7 +57,7 @@ function Settings() {
                 gameModes.map(mode => 
                     React.createElement('button', {
                         key: mode.value,
-                        onClick: () => dispatch({ type: 'CHANGE_MODE', mode: mode.value }),
+                        onClick: () => handleModeChange(mode.value),
                         style: {
                             padding: '10px',
                             backgroundColor: gameMode === mode.value ? '#4CAF50' : '#ddd',
