@@ -36,6 +36,13 @@ function GameBoard() {
         }, 1000);
     }
 
+    function stopTimer() {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+    }
+
     function handleCardClick(index) {
         if (!isPlaying) return;
         if (selectedCards.length === 2) return;
@@ -50,7 +57,6 @@ function GameBoard() {
             if (cards[selectedCards[0]].value === cards[index].value) {
                 dispatch({ type: 'MATCH_CARDS', indices: [...selectedCards, index] });
                 setSelectedCards([]);
-                checkGameEnd();
             } else {
                 setTimeout(() => {
                     dispatch({ type: 'RESET_CARDS', indices: [...selectedCards, index] });
@@ -60,10 +66,11 @@ function GameBoard() {
         }
     }
 
-    function checkGameEnd() {
-        if (cards.every(card => card.isMatched)) {
+    React.useEffect(() => {
+        // Whenever cards update, check if they're all matched
+        if (isPlaying && cards.length > 0 && cards.every(card => card.isMatched)) {
             setIsPlaying(false);
-            clearInterval(timerRef.current);
+            stopTimer();
             const gameResult = {
                 moves,
                 time,
@@ -73,7 +80,7 @@ function GameBoard() {
             dispatch({ type: 'ADD_TO_HISTORY', result: gameResult });
             saveToLocalStorage(gameResult);
         }
-    }
+    }, [cards, isPlaying, moves, time, gameMode, dispatch]);
 
     function saveToLocalStorage(result) {
         const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
@@ -87,57 +94,58 @@ function GameBoard() {
         };
     }, []);
 
-    return React.createElement('div', { 
-        style: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '20px'
+    const getGridTemplateColumns = () => {
+        switch (gameMode) {
+            case 4:
+                return 'repeat(2, 1fr)';
+            case 16:
+                return 'repeat(4, 1fr)';
+            case 64:
+                return 'repeat(8, 1fr)';
+            default:
+                return 'repeat(4, 1fr)';
         }
-    },
-        React.createElement('div', { 
-            style: {
-                marginBottom: '20px'
-            }
-        },
-            React.createElement('button', {
-                onClick: initializeGame,
-                style: {
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    cursor: 'pointer'
-                }
-            }, 'Start'),
-            React.createElement('span', {
-                style: {
-                    margin: '0 20px'
-                }
-            }, `Moves: ${moves}`),
-            React.createElement('span', null, `Time: ${time}s`)
-        ),
-        React.createElement('div', {
-            style: {
-                display: 'grid',
-                gridTemplateColumns: `repeat(${Math.sqrt(gameMode)}, 1fr)`,
-                gap: '10px',
-                maxWidth: '600px'
-            }
-        },
-            cards.map((card, index) => 
-                React.createElement(Card, {
-                    key: card.id,
-                    value: card.value,
-                    isFlipped: card.isFlipped || card.isMatched,
-                    onClick: () => handleCardClick(index)
-                })
-            )
-        )
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+            <div style={{ marginBottom: '20px' }}>
+                <button
+                    onClick={initializeGame}
+                    style={{
+                        padding: '10px 20px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Start
+                </button>
+                <span style={{ margin: '0 20px' }}>Moves: {moves}</span>
+                <span>Time: {time}s</span>
+            </div>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: getGridTemplateColumns(),
+                    gap: '10px',
+                    maxWidth: '600px'
+                }}
+            >
+                {cards.map((card, index) => (
+                    <Card
+                        key={card.id}
+                        value={card.value}
+                        isFlipped={card.isFlipped || card.isMatched}
+                        onClick={() => handleCardClick(index)}
+                    />
+                ))}
+            </div>
+        </div>
     );
-    
 }
 
 export default GameBoard;
